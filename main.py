@@ -1,16 +1,36 @@
-# This is a sample Python script.
+import matplotlib.pyplot as plt
+import numpy as np
+from KaplanMeier import pure_surv_function
+from DataHelper import DataHelper
+from Repository import Repository
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+most_common_diagnosys = ["Острый миелобастный лейкоз", 'B-ОЛЛ', "T-ОЛЛ", "Сверхтяжелая форма аплазии кроветворения",
+                         "Нейробластома"]
+diagnosis = repr(most_common_diagnosys[1])
 
+repo = Repository()
+query = "Select `Дата диагноза_dt`, `Дата смерти_dt`, isDead, `Вид клеточной терапии`, `Выбыл из очереди`, `Дата постановки диагноза 1_dt`,  Пол, `Рецидив основного заболевания` from test where `Диагноз 1` = "
+query = query + diagnosis
+records = repo.RunQuery(query)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hia, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+live_durations_dead = DataHelper.GetLiveDurationsOfDead(patients=records, daysSinceDiagnosis=12132131)
 
+[time_points, surv_P2, P] = pure_surv_function(4100, live_durations_dead, len(records),
+                                               len(live_durations_dead))
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+plt.plot(time_points, surv_P2, drawstyle="steps-pre")  # steps-pre is important for correct gragh
+plt.ylabel('Вероятность')
+plt.yticks(np.arange(0, 1.01, 0.1))
+plt.xlabel('Дни')
+plt.title(diagnosis)
+plt.show()
+print('P = ', P)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+# # Planning_times_func
+# [ counts, times ] = Planning_times_func(all_patients, max(live_durations_dead))
+# plt.plot(times, counts)  # steps-pre is important for correct gragh
+# plt.ylabel('counts')
+# plt.xlabel('times')
+# plt.title('planning times')
+# plt.show()
+#
