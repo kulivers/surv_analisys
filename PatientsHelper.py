@@ -3,11 +3,11 @@ from datetime import datetime, timedelta
 from Repository import Repository
 
 
-class DataHelper:
+class PatientsHelper:
     curDate = datetime(2021, 5, 31)
 
     @staticmethod
-    def GetLiveDurationsOfDead(patients, daysSinceDiagnosis):
+    def GetLiveDurationsOfDead(patients, daysSinceDiagnosis=12132131):
         durations = []
         for p in patients:
             deathDate = p['Дата смерти_dt']
@@ -20,7 +20,7 @@ class DataHelper:
         return durations
 
     @staticmethod
-    def GetLiveDurationsOfAlived(patients, daysSinceDiagnosis, withCensored=False):
+    def GetLiveDurationsOfAlived(patients, daysSinceDiagnosis=12121122, withCensored=False):
         # дата постановки диагноза 1 - Дата ТГСК утверждена
 
         durations = []
@@ -42,8 +42,3 @@ class DataHelper:
         return durations
 
 
-def pure_surv_function(t, live_durations_dead, planning_durations_alived, N=20):
-    a = 1
-# live_durations = count of days, N = how many points, t - time for calculating probability
-# t нужна только чтобы высчитать вероятность P(идет на выходе) выжить в момент t
-# разбили все дни на степы

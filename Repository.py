@@ -64,7 +64,6 @@ class Repository:
         # for x in mycursor:
         #     print(x[5])
 
-
         data = []
         columnNames = mycursor.column_names
 
@@ -75,5 +74,10 @@ class Repository:
                 rowObj[colName] = val
             data.append(rowObj)
 
-
         cnx.close()
+
+    def GetPatientsByDiagnosys(self, diagnosis_name):
+        query = "Select `Дата диагноза_dt`, `Дата смерти_dt`, isDead, `Вид клеточной терапии`, `Выбыл из очереди`, `Дата постановки диагноза 1_dt`,  Пол, `Рецидив основного заболевания` from test where `Диагноз 1` = "
+        query = query + diagnosis_name
+        records = self.RunQuery(query)
+        return records

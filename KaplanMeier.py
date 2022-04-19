@@ -1,3 +1,22 @@
+from cmath import sqrt
+
+from PatientsHelper import PatientsHelper
+from Repository import Repository
+
+
+def GetConfidenceIntervals(kaplanMeierPoints, alivedCount, deadPoints):
+    if len(deadPoints) != len(kaplanMeierPoints):
+        raise ValueError('alivedPoints, deadPoints should have same length')
+    sumAtT = 0
+    confIntervals = []
+    for idx, deadAtT in enumerate(deadPoints):
+        alivedAtT = alivedCount - deadAtT
+        sumAtT += deadAtT / (alivedAtT * (alivedCount - deadAtT))
+        result = sqrt(sumAtT) * kaplanMeierPoints[idx]
+        confIntervals.append(result)
+    return confIntervals
+
+
 def pure_surv_function(t, live_durations_dead, count_of_alived, N=20):
     # live_durations = count of days, N = how many points, t - time for calculating probability
     # t нужна только чтобы высчитать вероятность P(идет на выходе) выжить в момент t
@@ -35,11 +54,21 @@ def pure_surv_function(t, live_durations_dead, count_of_alived, N=20):
             break
 
     if t > max(time_steps):
-        idxOf_t = len(time_steps)-1
+        idxOf_t = len(time_steps) - 1
 
     # находим вероятность на этой точке в массиве result chances
     ChanceOnPoint_t = ChancesPointsArr[idxOf_t]
     return [time_steps, ChancesPointsArr, ChanceOnPoint_t]
+
+
+def GetTimePointsNP2(diagnosis_name):
+    repo = Repository()
+    records = repo.GetPatientsByDiagnosys(diagnosis_name)
+    live_durations_dead = PatientsHelper.GetLiveDurationsOfDead(patients=records)
+    return pure_surv_function(4100, live_durations_dead, len(records),
+                              len(live_durations_dead))
+
+
 
 
 def Risks_function(t, delta_t, live_durations_dead, planning_durations_alived, N=20):

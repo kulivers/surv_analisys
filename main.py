@@ -1,36 +1,31 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from KaplanMeier import pure_surv_function
-from DataHelper import DataHelper
-from Repository import Repository
+import scipy.stats
+
+from KaplanMeier import GetTimePointsNP2, GetConfidenceIntervals
 
 most_common_diagnosys = ["Острый миелобастный лейкоз", 'B-ОЛЛ', "T-ОЛЛ", "Сверхтяжелая форма аплазии кроветворения",
                          "Нейробластома"]
-diagnosis = repr(most_common_diagnosys[1])
 
-repo = Repository()
-query = "Select `Дата диагноза_dt`, `Дата смерти_dt`, isDead, `Вид клеточной терапии`, `Выбыл из очереди`, `Дата постановки диагноза 1_dt`,  Пол, `Рецидив основного заболевания` from test where `Диагноз 1` = "
-query = query + diagnosis
-records = repo.RunQuery(query)
+diagnosis = repr(most_common_diagnosys[0])
+[leikos_time_points, leikos_surv_P2, LEIKOS_P] = GetTimePointsNP2(repr(most_common_diagnosys[0]))
+# [VOLL_time_points, VOLL_surv_P2, VOLL_P] = GetTimePointsNP2(repr(most_common_diagnosys[1]))
+# [TOLL_time_points, TOLL_surv_P2, TOLL_P] = GetTimePointsNP2(repr(most_common_diagnosys[2]))
+# [APLASIA_time_points, APLASIA_surv_P2, APLASIA_P] = GetTimePointsNP2(repr(most_common_diagnosys[3]))
 
-live_durations_dead = DataHelper.GetLiveDurationsOfDead(patients=records, daysSinceDiagnosis=12132131)
+lower = []
+upper = []
+for p in leikos_surv_P2:
+    lower.append(p - 0.3)
+    upper.append(p + 0.3)
 
-[time_points, surv_P2, P] = pure_surv_function(4100, live_durations_dead, len(records),
-                                               len(live_durations_dead))
+# conf = GetConfidenceIntervals(leikos_surv_P2, )
 
-plt.plot(time_points, surv_P2, drawstyle="steps-pre")  # steps-pre is important for correct gragh
+
+plt.plot(leikos_time_points, leikos_surv_P2, drawstyle="steps-pre")
+plt.fill_between(leikos_time_points, lower, upper, color='b', alpha=.1)
 plt.ylabel('Вероятность')
-plt.yticks(np.arange(0, 1.01, 0.1))
+plt.yticks(np.arange(0, 1.501, 0.1))
 plt.xlabel('Дни')
 plt.title(diagnosis)
 plt.show()
-print('P = ', P)
-
-# # Planning_times_func
-# [ counts, times ] = Planning_times_func(all_patients, max(live_durations_dead))
-# plt.plot(times, counts)  # steps-pre is important for correct gragh
-# plt.ylabel('counts')
-# plt.xlabel('times')
-# plt.title('planning times')
-# plt.show()
-#
