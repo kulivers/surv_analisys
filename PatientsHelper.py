@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from Repository import Repository
+from Hsct_repository import Hsct_repository
 
 
 class PatientsHelper:
@@ -20,7 +20,7 @@ class PatientsHelper:
         return durations
 
     @staticmethod
-    def GetLiveDurationsOfAlived(patients, daysSinceDiagnosis=12121122, withCensored=False):
+    def GetAlivedPatients(patients, daysSinceDiagnosis=12121122, withCensored=True):
         # дата постановки диагноза 1 - Дата ТГСК утверждена
 
         durations = []
@@ -32,12 +32,10 @@ class PatientsHelper:
                 continue
             if withCensored:
                 if isDead != 1:  # all not dead (+no data)
-                    days = diagnosisDate + timedelta(days=daysSinceDiagnosis)  # здесь дата минус
-                    durations.append(days.days)
+                    durations.append(p)
             else:
                 if isDead == -1:  # only dead
-                    days = diagnosisDate + timedelta(days=daysSinceDiagnosis)  # здесь дата минус дни. не хорошо
-                    durations.append(days.days)
+                    durations.append(p)
 
         return durations
 

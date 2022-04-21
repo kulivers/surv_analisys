@@ -1,7 +1,8 @@
+import math
 from cmath import sqrt
 
 from PatientsHelper import PatientsHelper
-from Repository import Repository
+from Hsct_repository import Hsct_repository
 
 
 def GetConfidenceIntervals(kaplanMeierPoints, alivedCount, deadPoints):
@@ -17,15 +18,21 @@ def GetConfidenceIntervals(kaplanMeierPoints, alivedCount, deadPoints):
     return confIntervals
 
 
-def pure_surv_function(t, live_durations_dead, count_of_alived, N=20):
+def pure_surv_function2(t, live_durations_dead, count_of_alived, N=None):
     # live_durations = count of days, N = how many points, t - time for calculating probability
     # t нужна только чтобы высчитать вероятность P(идет на выходе) выжить в момент t
     # разбили все дни на степы
+
+    if N is None:
+        N = len(live_durations_dead)
+
     maximum_days = max(live_durations_dead)
     step = int(maximum_days / N)
     time_steps = list(range(0, maximum_days + step, step))
 
-    # default values
+    if N is None:
+        time_steps = sorted(live_durations_dead)
+
     ChancesPointsArr = []
     multi = 1
     count_alived_on_start = len(live_durations_dead) + count_of_alived
@@ -35,13 +42,7 @@ def pure_surv_function(t, live_durations_dead, count_of_alived, N=20):
         for dur in live_durations_dead:
             if dur < ti:
                 count_of_dead_at_ti += 1
-        # формула выживаемости для каждой точки, на каждую точку считам сколько померло
         chanceInPoint = (count_alived_on_start - count_of_dead_at_ti) / count_alived_on_start
-
-        # я так понимаю ниже для условной вероятности, но почему он зависит от количество точек это не правильно!!
-        # multi = multi * chanceInPoint
-        # chanceInPoint = multi
-
         ChancesPointsArr.append(chanceInPoint)
 
     # now we want to get P of survive at t
@@ -61,23 +62,49 @@ def pure_surv_function(t, live_durations_dead, count_of_alived, N=20):
     return [time_steps, ChancesPointsArr, ChanceOnPoint_t]
 
 
-def GetTimePointsNP2(diagnosis_name):
-    repo = Repository()
+def GetKaplanPoints(diagnosis_name):
+    repo = Hsct_repository()
     records = repo.GetPatientsByDiagnosys(diagnosis_name)
-    live_durations_dead = PatientsHelper.GetLiveDurationsOfDead(patients=records)
-    return pure_surv_function(4100, live_durations_dead, len(records),
-                              len(live_durations_dead))
+    live_durations_dead = PatientsHelper.GetLiveDurationsOfDead(records)
+    alivedCens = PatientsHelper.GetAlivedPatients(records, withCensored=True)
+    alivedNotCens = PatientsHelper.GetAlivedPatients(records, withCensored=False)
+
+    return pure_surv_function(max(live_durations_dead) + 1, live_durations_dead, len(alivedNotCens))
 
 
+def pure_surv_function(t, live_durations_dead, count_of_alived_without_cens):
+    time_steps = sorted(live_durations_dead)
 
+    chances_points_arr = []
+    confidence_intervals = []
+    multi = 1
+    count_alived_on_start_without_cens = len(live_durations_dead) + count_of_alived_without_cens
+    confidence_intervals_sum = 0
+    for ti in time_steps:
+        count_of_dead_at_ti = 0
+        for dur in live_durations_dead:
+            if dur < ti:
+                count_of_dead_at_ti += 1
+        count_of_dead_at_ti = 1
+        count_alived_at_ti = count_alived_on_start_without_cens - count_of_dead_at_ti
+        chanceInPoint = ((count_alived_at_ti - count_of_dead_at_ti) / count_alived_at_ti) * multi
+        multi = chanceInPoint
+        chances_points_arr.append(chanceInPoint)
 
-def Risks_function(t, delta_t, live_durations_dead, planning_durations_alived, N=20):
-    # вероятность того, что смерть произошла в интервале времени [t, t + delta t].
-    [_S1, _time_steps, t_P1] = pure_surv_function(t, live_durations_dead, planning_durations_alived, N)
-    [_S2, _time_steps2, t_P2] = pure_surv_function(t + delta_t, live_durations_dead, planning_durations_alived, N)
-    death_p1 = 1 - t_P1
-    death_p2 = 1 - t_P2
+        confidence_intervals_sum += count_of_dead_at_ti / (count_alived_at_ti * (count_alived_at_ti - count_of_dead_at_ti))
+        confidence_interval_at_ti = chanceInPoint * math.sqrt(confidence_intervals_sum)
+        confidence_intervals.append(confidence_interval_at_ti)
 
-    val = (death_p2 - death_p1) * death_p1 / (delta_t)
+    idxOf_t = 0
 
-    return val
+    for idx, ti in enumerate(time_steps):
+        if ti >= t:
+            idxOf_t = idx
+            break
+
+    if t > max(time_steps):
+        idxOf_t = len(time_steps) - 1
+
+    # находим вероятность на этой точке в массиве result chances
+    ChanceOnPoint_t = chances_points_arr[idxOf_t]
+    return [time_steps, chances_points_arr, ChanceOnPoint_t, confidence_intervals]

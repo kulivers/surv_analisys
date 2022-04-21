@@ -1,31 +1,32 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.stats
 
-from KaplanMeier import GetTimePointsNP2, GetConfidenceIntervals
+from KaplanMeier import GetKaplanPoints
+from PatientsHelper import PatientsHelper
+from Hsct_repository import Hsct_repository
 
+repo = Hsct_repository()
 most_common_diagnosys = ["Острый миелобастный лейкоз", 'B-ОЛЛ', "T-ОЛЛ", "Сверхтяжелая форма аплазии кроветворения",
                          "Нейробластома"]
 
 diagnosis = repr(most_common_diagnosys[0])
-[leikos_time_points, leikos_surv_P2, LEIKOS_P] = GetTimePointsNP2(repr(most_common_diagnosys[0]))
-# [VOLL_time_points, VOLL_surv_P2, VOLL_P] = GetTimePointsNP2(repr(most_common_diagnosys[1]))
-# [TOLL_time_points, TOLL_surv_P2, TOLL_P] = GetTimePointsNP2(repr(most_common_diagnosys[2]))
-# [APLASIA_time_points, APLASIA_surv_P2, APLASIA_P] = GetTimePointsNP2(repr(most_common_diagnosys[3]))
+[leikos_time_points, leikos_surv_P2, LEIKOS_P, confidence_intervals] = GetKaplanPoints(diagnosis)
+
+live_durations_dead = PatientsHelper.GetLiveDurationsOfDead(repo.GetPatientsByDiagnosys(diagnosis))
+aliveCount = len(repo.GetPatientsByDiagnosys(diagnosis))
 
 lower = []
 upper = []
-for p in leikos_surv_P2:
-    lower.append(p - 0.3)
-    upper.append(p + 0.3)
-
-# conf = GetConfidenceIntervals(leikos_surv_P2, )
+for idx, p in enumerate(leikos_surv_P2):
+    ci = confidence_intervals[idx]
+    lower.append(p - ci*0.05)
+    upper.append(p + ci*0.05)
 
 
 plt.plot(leikos_time_points, leikos_surv_P2, drawstyle="steps-pre")
 plt.fill_between(leikos_time_points, lower, upper, color='b', alpha=.1)
 plt.ylabel('Вероятность')
-plt.yticks(np.arange(0, 1.501, 0.1))
+plt.yticks(np.arange(0, 1.01, 0.1))
 plt.xlabel('Дни')
 plt.title(diagnosis)
 plt.show()
