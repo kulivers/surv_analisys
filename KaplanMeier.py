@@ -1,8 +1,8 @@
 import math
 from cmath import sqrt
 
-from PatientsHelper import PatientsHelper
-from Hsct_repository import Hsct_repository
+from HsctPatientsHelper import HsctPatientsHelper
+from HsctRepository import HsctRepository
 
 
 def GetConfidenceIntervals(kaplanMeierPoints, alivedCount, deadPoints):
@@ -63,11 +63,11 @@ def pure_surv_function2(t, live_durations_dead, count_of_alived, N=None):
 
 
 def GetKaplanPoints(diagnosis_name):
-    repo = Hsct_repository()
+    repo = HsctRepository()
     records = repo.GetPatientsByDiagnosys(diagnosis_name)
-    live_durations_dead = PatientsHelper.GetLiveDurationsOfDead(records)
-    alivedCens = PatientsHelper.GetAlivedPatients(records, withCensored=True)
-    alivedNotCens = PatientsHelper.GetAlivedPatients(records, withCensored=False)
+    live_durations_dead = HsctPatientsHelper.GetLiveDurationsOfDead(records)
+    alivedCens = HsctPatientsHelper.GetAlivedPatients(records, withCensored=True)
+    alivedNotCens = HsctPatientsHelper.GetAlivedPatients(records, withCensored=False)
 
     return pure_surv_function(max(live_durations_dead) + 1, live_durations_dead, len(alivedNotCens))
 

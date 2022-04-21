@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 
-from Hsct_repository import Hsct_repository
+from HsctRepository import HsctRepository
 
 
-class PatientsHelper:
+class HsctPatientsHelper:
     curDate = datetime(2021, 5, 31)
 
     @staticmethod

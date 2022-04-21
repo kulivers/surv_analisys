@@ -4,7 +4,7 @@ import mysql.connector
 from mysql.connector import cursor
 
 
-class Hsct_repository:
+class HsctRepository:
     patients = {}
 
     def RunQuery(self, query):

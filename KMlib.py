@@ -3,8 +3,8 @@ from lifelines import KaplanMeierFitter
 from lifelines.datasets import load_waltons
 
 from KaplanMeier import GetKaplanPoints
-from PatientsHelper import PatientsHelper
-from Hsct_repository import Hsct_repository
+from HsctPatientsHelper import HsctPatientsHelper
+from HsctRepository import HsctRepository
 
 waltons = load_waltons()
 kmf = KaplanMeierFitter(label="waltons_data")

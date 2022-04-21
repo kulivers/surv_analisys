@@ -1,32 +1,8 @@
-import matplotlib.pyplot as plt
-import numpy as np
+from HsctRepository import HsctRepository
+from Umdb_repository import UmdbRepository
 
-from KaplanMeier import GetKaplanPoints
-from PatientsHelper import PatientsHelper
-from Hsct_repository import Hsct_repository
+umdbRepo = UmdbRepository()
+hsctRepo = HsctRepository()
 
-repo = Hsct_repository()
-most_common_diagnosys = ["Острый миелобастный лейкоз", 'B-ОЛЛ', "T-ОЛЛ", "Сверхтяжелая форма аплазии кроветворения",
-                         "Нейробластома"]
-
-diagnosis = repr(most_common_diagnosys[0])
-[leikos_time_points, leikos_surv_P2, LEIKOS_P, confidence_intervals] = GetKaplanPoints(diagnosis)
-
-live_durations_dead = PatientsHelper.GetLiveDurationsOfDead(repo.GetPatientsByDiagnosys(diagnosis))
-aliveCount = len(repo.GetPatientsByDiagnosys(diagnosis))
-
-lower = []
-upper = []
-for idx, p in enumerate(leikos_surv_P2):
-    ci = confidence_intervals[idx]
-    lower.append(p - ci*0.05)
-    upper.append(p + ci*0.05)
-
-
-plt.plot(leikos_time_points, leikos_surv_P2, drawstyle="steps-pre")
-plt.fill_between(leikos_time_points, lower, upper, color='b', alpha=.1)
-plt.ylabel('Вероятность')
-plt.yticks(np.arange(0, 1.01, 0.1))
-plt.xlabel('Дни')
-plt.title(diagnosis)
-plt.show()
+if __name__ == '__main__':
+    a=1
