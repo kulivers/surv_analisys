@@ -3,7 +3,7 @@ from lifelines import KaplanMeierFitter
 from lifelines.datasets import load_waltons
 
 from KaplanMeier import GetKaplanPoints
-from HsctPatientsHelper import HsctPatientsHelper
+from HsctHelper import HsctHelper
 from HsctRepository import HsctRepository
 
 waltons = load_waltons()

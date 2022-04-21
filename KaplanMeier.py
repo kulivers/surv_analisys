@@ -1,7 +1,7 @@
 import math
 from cmath import sqrt
 
-from HsctPatientsHelper import HsctPatientsHelper
+from HsctHelper import HsctHelper
 from HsctRepository import HsctRepository
 
 
@@ -65,9 +65,9 @@ def pure_surv_function2(t, live_durations_dead, count_of_alived, N=None):
 def GetKaplanPoints(diagnosis_name):
     repo = HsctRepository()
     records = repo.GetPatientsByDiagnosys(diagnosis_name)
-    live_durations_dead = HsctPatientsHelper.GetLiveDurationsOfDead(records)
-    alivedCens = HsctPatientsHelper.GetAlivedPatients(records, withCensored=True)
-    alivedNotCens = HsctPatientsHelper.GetAlivedPatients(records, withCensored=False)
+    live_durations_dead = HsctHelper.GetLiveDurationsOfDead(records)
+    alivedCens = HsctHelper.GetAlivedPatients(records, withCensored=True)
+    alivedNotCens = HsctHelper.GetAlivedPatients(records, withCensored=False)
 
     return pure_surv_function(max(live_durations_dead) + 1, live_durations_dead, len(alivedNotCens))
 

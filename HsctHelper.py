@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from HsctRepository import HsctRepository
 
 
-class HsctPatientsHelper:
+class HsctHelper:
     curDate = datetime(2021, 5, 31)
 
     @staticmethod

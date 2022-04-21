@@ -3,7 +3,7 @@ import pandas as pd
 from lifelines import KaplanMeierFitter
 from lifelines.datasets import load_waltons
 from matplotlib import pyplot as plt
-from HsctPatientsHelper import HsctPatientsHelper
+from HsctHelper import HsctHelper
 from HsctRepository import HsctRepository
 
 
@@ -22,7 +22,7 @@ most_common_diagnosys = ["Острый миелобастный лейкоз", '
 def GetFitByDiagnosys(diagnosis_p):
     diagnosis = repr(diagnosis_p)
     records = hsct_repo.GetPatientsByDiagnosys(diagnosis)
-    live_durations_dead = HsctPatientsHelper.GetLiveDurationsOfDead(records)
+    live_durations_dead = HsctHelper.GetLiveDurationsOfDead(records)
     mydf = pd.DataFrame()
     mydf['Durs'] = live_durations_dead
     mydf['events'] = GetEvents(live_durations_dead)

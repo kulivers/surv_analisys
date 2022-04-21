@@ -2,18 +2,17 @@ from pymongo import MongoClient
 import pymongo
 
 
-def getPath(nested_dict, value, prepath=()):
-    for k, v in nested_dict.items():
-        path = prepath + (k,)
-        if v == value:  # found value
-            return path
-        elif hasattr(v, 'items'):  # v is a dict
-            p = getPath(v, value, path)  # recursive call
-            if p is not None:
-                return p
-
-
 class UmdbRepository:
+    def getPath(self, nested_dict, value, prepath=()):
+        for k, v in nested_dict.items():
+            path = prepath + (k,)
+            if v == value:  # found value
+                return path
+            elif hasattr(v, 'items'):  # v is a dict
+                p = self.getPath(v, value, path)  # recursive call
+                if p is not None:
+                    return p
+
     def getDbClient(self, dbName='umdb'):
         # Provide the mongodb atlas url to connect python to mongodb using pymongo
         CONNECTION_STRING = "mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false"
@@ -28,7 +27,7 @@ class UmdbRepository:
         db = self.getDbClient(dbName)
         return db[collection_name]
 
-    def getMostCommonDiagnoses(self, N=20):  # there is broken paths if big value
+    def getMostCommonDiagnosesPaths(self, N=20):  # there is broken paths if big value
         # like ['1', '3', '6', 'Десмопластическая медуллобластома']
 
         collection = self.getCollection('records', 'umdb')
@@ -59,10 +58,10 @@ class UmdbRepository:
     def getDiagnosysPath(self, name, withChildren=False, withTitle=False):
         col = self.getCollection('dictionaries').find({"name": "diagnoses"})[0]['dictionary']
         if withChildren:
-            return getPath(col, name)
+            return self.getPath(col, name)
         else:
             newPath = []
-            for node in getPath(col, name):
+            for node in self.getPath(col, name):
                 if node != 'children':
                     newPath.append(node)
 
@@ -76,7 +75,7 @@ class UmdbRepository:
         return list(col.find({'diagnosis': diagnosysPath}))
 
     def printMostCommonDiagnoses(self, N=10):
-        com = self.getMostCommonDiagnoses(300)
+        com = self.getMostCommonDiagnosesPaths(300)
 
         for d in com:
             path = d['_id']

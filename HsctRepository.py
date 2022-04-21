@@ -78,6 +78,6 @@ class HsctRepository:
 
     def GetPatientsByDiagnosys(self, diagnosis_name):
         query = "Select `Дата диагноза_dt`, `Дата смерти_dt`, isDead, `Вид клеточной терапии`, `Выбыл из очереди`, `Дата постановки диагноза 1_dt`,  Пол, `Рецидив основного заболевания` from test where `Диагноз 1` = "
-        query = query + diagnosis_name
+        query = query + repr(diagnosis_name)
         records = self.RunQuery(query)
         return records

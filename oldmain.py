@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from KaplanMeier import GetKaplanPoints
-from HsctPatientsHelper import HsctPatientsHelper
+from HsctHelper import HsctHelper
 from HsctRepository import HsctRepository
 
 repo = HsctRepository()
@@ -12,7 +12,7 @@ most_common_diagnosys = ["Острый миелобастный лейкоз", '
 diagnosis = repr(most_common_diagnosys[0])
 [leikos_time_points, leikos_surv_P2, LEIKOS_P, confidence_intervals] = GetKaplanPoints(diagnosis)
 
-live_durations_dead = HsctPatientsHelper.GetLiveDurationsOfDead(repo.GetPatientsByDiagnosys(diagnosis))
+live_durations_dead = HsctHelper.GetLiveDurationsOfDead(repo.GetPatientsByDiagnosys(diagnosis))
 aliveCount = len(repo.GetPatientsByDiagnosys(diagnosis))
 
 lower = []
