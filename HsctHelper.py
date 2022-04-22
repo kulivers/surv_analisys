@@ -26,7 +26,6 @@ class HsctHelper:
         durations = []
         for p in patients:
             diagnosisDate = p['Дата постановки диагноза 1_dt']
-            # tgskDate = p['Дата ТГСК утверждена_dt']
             isDead = p['isDead']
             if diagnosisDate is None:
                 continue

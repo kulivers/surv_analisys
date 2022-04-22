@@ -23,10 +23,15 @@ def GetFitByDiagnosys(diagnosis_p):
     diagnosis = repr(diagnosis_p)
     records = hsct_repo.GetPatientsByDiagnosys(diagnosis)
     live_durations_dead = HsctHelper.GetLiveDurationsOfDead(records)
+
     mydf = pd.DataFrame()
     mydf['Durs'] = live_durations_dead
     mydf['events'] = GetEvents(live_durations_dead)
+
+    # waltons = load_waltons()
     kmf = KaplanMeierFitter(label="waltons_data")
+    # kmf.fit(waltons['T'], mydf['E'])  # durations, event_observed
+
     kmf.fit(mydf['Durs'], mydf['events'])  # durations, event_observed
     surv = kmf.survival_function_.values
     timeline = kmf.timeline

@@ -24,15 +24,14 @@ def GetEvents(durs):
 if __name__ == '__main__':
     path = umdbRepo.getMostCommonDiagnosesPaths()[0]['_id']
     name = umdbRepo.getDiagnosysName(path)
-    name = 'B-ОЛЛ'
     records = umdbRepo.getPatientsByDiagnosysName(name)
-    records = hsctRepo.GetPatientsByDiagnosys(name)
     live_durations_dead = umdbHelper.GetLiveDurationsOfDead(records)
-    live_durations_dead = hsctHelper.GetLiveDurationsOfDead(records)
+    live_durations_censored = umdbHelper.GetLiveDurationsOfCensored(records)
 
     mydf = pd.DataFrame()
-    mydf['Durs'] = live_durations_dead
-    mydf['events'] = [1] * len(live_durations_dead)
+    mydf['Durs'] = live_durations_dead + live_durations_censored
+    mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
+
     kmf = KaplanMeierFitter(label="waltons_data")
     kmf.fit(mydf['Durs'], mydf['events'])  # durations, event_observed
     surv = kmf.survival_function_.values
