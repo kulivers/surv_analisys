@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pandas as pd
-from lifelines import KaplanMeierFitter
+from lifelines import KaplanMeierFitter, CoxPHFitter
 
 from UmdbRepository import UmdbRepository
 
@@ -136,6 +136,25 @@ class UmdbHelper:
 
         kmf = KaplanMeierFitter(label="waltons_data")
         kmf.fit(mydf['Durs'], mydf['events'])
+        surv = kmf.survival_function_.values
+        timeline = kmf.timeline
+        lower = kmf.confidence_interval_['waltons_data_lower_0.95']
+        upper = kmf.confidence_interval_['waltons_data_upper_0.95']
+        return [surv, timeline, lower, upper]
+
+    def getCoxValues(self, records):
+        live_durations_dead = self.GetLiveDurationsOfDead(records)
+        live_durations_censored = self.GetLiveDurationsOfCensored(records)
+
+        mydf = pd.DataFrame()
+        mydf['Durs'] = live_durations_dead + live_durations_censored
+        mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
+
+        cph = CoxPHFitter()
+        cph.fit(df=mydf, duration_col='Durs', event_col='events')
+        # cph.fit(data, duration_col='time', event_col='status')
+        a = 2221
+        return cph
         surv = kmf.survival_function_.values
         timeline = kmf.timeline
         lower = kmf.confidence_interval_['waltons_data_lower_0.95']

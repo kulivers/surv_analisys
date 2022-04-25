@@ -2,6 +2,7 @@ from lifelines.statistics import logrank_test
 import numpy as np
 import pandas as pd
 from lifelines import KaplanMeierFitter
+from lifelines import CoxPHFitter
 from matplotlib import pyplot as plt
 from scipy.spatial import KDTree
 from webcolors import (
@@ -69,11 +70,17 @@ if __name__ == '__main__':
     malesValues = umdbHelper.getKaplanValues(males)
     femalesValues = umdbHelper.getKaplanValues(females)
     log = logrank_test(malesValues[0], femalesValues[0], event_observed_A=malesValues[1], event_observed_B=femalesValues[1])
+    #Менее (5% = 0,05) значение P означает, что существует значительная разница между группами, которые мы сравнивали
 
-    plt.plot(malesValues[1], malesValues[0], drawstyle="steps-pre", color='b')
-    plt.plot(femalesValues[1], femalesValues[0], drawstyle="steps-pre", color='r')
-    plt.ylabel('Вероятность')
-    plt.yticks(np.arange(0, 1.01, 0.1))
-    plt.xlabel('Дни')
-    plt.title('SURV')
-    plt.show()
+
+    # a = umdbHelper.getCoxValues(malesValues)
+
+
+
+    # plt.plot(malesValues[1], malesValues[0], drawstyle="steps-pre", color='b')
+    # plt.plot(femalesValues[1], femalesValues[0], drawstyle="steps-pre", color='r')
+    # plt.ylabel('Вероятность')
+    # plt.yticks(np.arange(0, 1.01, 0.1))
+    # plt.xlabel('Дни')
+    # plt.title('SURV')
+    # plt.show()
