@@ -1,5 +1,8 @@
 from datetime import datetime
 
+import pandas as pd
+from lifelines import KaplanMeierFitter
+
 from UmdbRepository import UmdbRepository
 
 
@@ -58,3 +61,83 @@ class UmdbHelper:
 
         return sorted(durations)
 
+    def getKaplanValuesByDiagnosysName(self, diagnosys_name):
+        records = self.getPatientsByDiagnosysName(diagnosys_name)
+        live_durations_dead = self.GetLiveDurationsOfDead(records)
+        live_durations_censored = self.GetLiveDurationsOfCensored(records)
+
+        mydf = pd.DataFrame()
+        mydf['Durs'] = live_durations_dead + live_durations_censored
+        mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
+
+        kmf = KaplanMeierFitter(label="waltons_data")
+        kmf.fit(mydf['Durs'], mydf['events'])
+        surv = kmf.survival_function_.values
+        timeline = kmf.timeline
+        lower = kmf.confidence_interval_['waltons_data_lower_0.95']
+        upper = kmf.confidence_interval_['waltons_data_upper_0.95']
+        return [surv, timeline, lower, upper]
+
+    def getKaplanValuesByDiagnosysPath(self, path):
+        records = self.repo.getPatientsByDiagnosysPath(path)
+        live_durations_dead = self.GetLiveDurationsOfDead(records)
+        live_durations_censored = self.GetLiveDurationsOfCensored(records)
+
+        mydf = pd.DataFrame()
+        mydf['Durs'] = live_durations_dead + live_durations_censored
+        mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
+
+        kmf = KaplanMeierFitter(label="waltons_data")
+        kmf.fit(mydf['Durs'], mydf['events'])
+        surv = kmf.survival_function_.values
+        timeline = kmf.timeline
+        lower = kmf.confidence_interval_['waltons_data_lower_0.95']
+        upper = kmf.confidence_interval_['waltons_data_upper_0.95']
+        return [surv, timeline, lower, upper]
+
+    def getKaplanValuesByDiagnosys(self, diagnosys):
+        records = self.repo.getPatientsByDiagnosysName(diagnosys)
+        live_durations_dead = self.GetLiveDurationsOfDead(records)
+        live_durations_censored = self.GetLiveDurationsOfCensored(records)
+
+        mydf = pd.DataFrame()
+        mydf['Durs'] = live_durations_dead + live_durations_censored
+        mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
+
+        kmf = KaplanMeierFitter(label="waltons_data")
+        kmf.fit(mydf['Durs'], mydf['events'])
+        surv = kmf.survival_function_.values
+        timeline = kmf.timeline
+        lower = kmf.confidence_interval_['waltons_data_lower_0.95']
+        upper = kmf.confidence_interval_['waltons_data_upper_0.95']
+        return [surv, timeline, lower, upper, kmf.event_table]
+
+    def getPatientsBySex(self, records, sex='m'):
+        sex_arr = None
+        if sex is not None:
+            sex_arr = [sex]
+
+        res = []
+        for r in records:
+            try:
+                if r['patient_sex'] == sex_arr:
+                    res.append(r)
+            except:
+                continue
+        return res
+
+    def getKaplanValues(self, records):
+        live_durations_dead = self.GetLiveDurationsOfDead(records)
+        live_durations_censored = self.GetLiveDurationsOfCensored(records)
+
+        mydf = pd.DataFrame()
+        mydf['Durs'] = live_durations_dead + live_durations_censored
+        mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
+
+        kmf = KaplanMeierFitter(label="waltons_data")
+        kmf.fit(mydf['Durs'], mydf['events'])
+        surv = kmf.survival_function_.values
+        timeline = kmf.timeline
+        lower = kmf.confidence_interval_['waltons_data_lower_0.95']
+        upper = kmf.confidence_interval_['waltons_data_upper_0.95']
+        return [surv, timeline, lower, upper]

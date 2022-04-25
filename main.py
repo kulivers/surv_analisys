@@ -20,59 +20,6 @@ hsctRepo = HsctRepository()
 hsctHelper = HsctHelper()
 
 
-def getKaplanValuesByDiagnosysName(diagnosys_name):
-    records = umdbRepo.getPatientsByDiagnosysName(diagnosys_name)
-    live_durations_dead = umdbHelper.GetLiveDurationsOfDead(records)
-    live_durations_censored = umdbHelper.GetLiveDurationsOfCensored(records)
-
-    mydf = pd.DataFrame()
-    mydf['Durs'] = live_durations_dead + live_durations_censored
-    mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
-
-    kmf = KaplanMeierFitter(label="waltons_data")
-    kmf.fit(mydf['Durs'], mydf['events'])
-    surv = kmf.survival_function_.values
-    timeline = kmf.timeline
-    lower = kmf.confidence_interval_['waltons_data_lower_0.95']
-    upper = kmf.confidence_interval_['waltons_data_upper_0.95']
-    return [surv, timeline, lower, upper]
-
-
-def getKaplanValuesByDiagnosysPath(path):
-    records = umdbRepo.getPatientsByDiagnosysPath(path)
-    live_durations_dead = umdbHelper.GetLiveDurationsOfDead(records)
-    live_durations_censored = umdbHelper.GetLiveDurationsOfCensored(records)
-
-    mydf = pd.DataFrame()
-    mydf['Durs'] = live_durations_dead + live_durations_censored
-    mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
-
-    kmf = KaplanMeierFitter(label="waltons_data")
-    kmf.fit(mydf['Durs'], mydf['events'])
-    surv = kmf.survival_function_.values
-    timeline = kmf.timeline
-    lower = kmf.confidence_interval_['waltons_data_lower_0.95']
-    upper = kmf.confidence_interval_['waltons_data_upper_0.95']
-    return [surv, timeline, lower, upper]
-
-
-def getKaplanValues(records):
-    live_durations_dead = umdbHelper.GetLiveDurationsOfDead(records)
-    live_durations_censored = umdbHelper.GetLiveDurationsOfCensored(records)
-
-    mydf = pd.DataFrame()
-    mydf['Durs'] = live_durations_dead + live_durations_censored
-    mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
-
-    kmf = KaplanMeierFitter(label="waltons_data")
-    kmf.fit(mydf['Durs'], mydf['events'])
-    surv = kmf.survival_function_.values
-    timeline = kmf.timeline
-    lower = kmf.confidence_interval_['waltons_data_lower_0.95']
-    upper = kmf.confidence_interval_['waltons_data_upper_0.95']
-    return [surv, timeline, lower, upper]
-
-
 def hex_to_rgb(value):
     value = value.lstrip('#')
     lv = len(value)
@@ -98,8 +45,8 @@ def pltDiagnosesByNames(names):
     for idx, d in enumerate(names):
         path = d['_id']
         name = umdbRepo.getDiagnosysName(path)
-        [surv, timeline, lower, upper] = getKaplanValuesByDiagnosysName(name)
-        survs.append(getKaplanValuesByDiagnosysName(name))
+        [surv, timeline, lower, upper] = umdbHelper.getKaplanValuesByDiagnosysName(name)
+        survs.append(umdbHelper.getKaplanValuesByDiagnosysName(name))
         p, = plt.plot(timeline, surv, drawstyle="steps-pre")
         rgb = hex_to_rgb(p.get_color())
         color = convert_rgb_to_names(rgb)
@@ -112,38 +59,19 @@ def pltDiagnosesByNames(names):
     return survs
 
 
-
-def getPatientsBySex(records, sex='m'):
-    sex_arr = None
-    if sex is not None:
-        sex_arr = [sex]
-
-    res = []
-    for r in records:
-        try:
-            if r['patient_sex'] == sex_arr:
-                res.append(r)
-        except:
-            continue
-    return res
-
-
 if __name__ == '__main__':
     common_paths = umdbRepo.getMostCommonDiagnosesPaths(False, 6)
     records = umdbRepo.getPatientsByDiagnosysPath(common_paths[0])
-    males = getPatientsBySex(records, 'm')
-    females = getPatientsBySex(records, 'f')
-    noSex = getPatientsBySex(records, None)
+    males = umdbHelper.getPatientsBySex(records, 'm')
+    females = umdbHelper.getPatientsBySex(records, 'f')
+    noSex = umdbHelper.getPatientsBySex(records, None)
 
-    malesValues = getKaplanValues(males)
-    femalesValues = getKaplanValues(females)
-    # 0-surv, 1-timelines
-    a=1
+    malesValues = umdbHelper.getKaplanValues(males)
+    femalesValues = umdbHelper.getKaplanValues(females)
+    log = logrank_test(malesValues[0], femalesValues[0], event_observed_A=malesValues[1], event_observed_B=femalesValues[1])
+
     plt.plot(malesValues[1], malesValues[0], drawstyle="steps-pre", color='b')
     plt.plot(femalesValues[1], femalesValues[0], drawstyle="steps-pre", color='r')
-    log = logrank_test(malesValues[0], femalesValues[0])
-
-    # p = plt.plot(timeline, surv, drawstyle="steps-pre")
     plt.ylabel('Вероятность')
     plt.yticks(np.arange(0, 1.01, 0.1))
     plt.xlabel('Дни')
