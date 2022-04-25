@@ -1,0 +1,10 @@
+early_acute_toxicity_mucositis
+early_acute_toxicity_mucositis_therapy
+conditioning_elements            - лекарства
+gvhd_prophylaxis_elements            - лекарства
+diagnosis_mrd_status
+diagnosis_mrd_status_after
+engraphment_...all
+gvhd_chronic
+
+hsct_cmv_donor - 1/0

@@ -57,3 +57,4 @@ class UmdbHelper:
                 continue
 
         return sorted(durations)
+

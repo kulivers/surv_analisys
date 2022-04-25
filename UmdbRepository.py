@@ -27,7 +27,7 @@ class UmdbRepository:
         db = self.getDbClient(dbName)
         return db[collection_name]
 
-    def getMostCommonDiagnosesPaths(self, N=20):  # there is broken paths if big value
+    def getMostCommonDiagnosesPaths(self, withCounts=False, N=20):  # there is broken paths if big value
         # like ['1', '3', '6', 'Десмопластическая медуллобластома']
 
         collection = self.getCollection('records', 'umdb')
@@ -39,7 +39,9 @@ class UmdbRepository:
             if d["_id"] is not None:
                 res.append(d)
         res = sorted(res, key=lambda d: d['count'], reverse=True)[:N]
-        return res
+        if withCounts:
+            return res
+        return list(map(lambda x: x['_id'], res))
 
     def getDiagnosysName(self, path):
         res = self.getCollection('dictionaries').find({"name": "diagnoses"})[0]['dictionary']
@@ -74,15 +76,7 @@ class UmdbRepository:
         col = self.getCollection('records', 'umdb')
         return list(col.find({'diagnosis': diagnosysPath}))
 
-    def printMostCommonDiagnoses(self, N=10):
-        com = self.getMostCommonDiagnosesPaths(300)
-
-        for d in com:
-            path = d['_id']
-            count = d['count']
-            try:
-                name = self.getDiagnosysName(path)
-                print(path, name, ' - ', count)
-            except:
-                print('broken path')
+    def getPatientsByDiagnosysPath(self, path):
+        col = self.getCollection('records', 'umdb')
+        return list(col.find({'diagnosis': path}))
 
