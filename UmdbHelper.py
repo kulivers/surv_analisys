@@ -10,7 +10,7 @@ from UmdbRepository import UmdbRepository
 class UmdbHelper:
     repo = UmdbRepository()
 
-    def GetLiveDurationsOfDead(self, records, daysSinceDiagnosis=12132131):
+    def getLiveDurationsOfDead(self, records, daysSinceDiagnosis=12132131):
         durations = []
         for r in records:
             try:
@@ -26,7 +26,7 @@ class UmdbHelper:
 
         return sorted(durations)
 
-    def GetMaxLastEditDate(self):
+    def getMaxLastEditDate(self):
         col = self.repo.getCollection()
         queryRes = col.aggregate([{
             "$project": {
@@ -40,27 +40,67 @@ class UmdbHelper:
         result = list(queryRes)
         return result[0]['last_edit_date']
 
-    def GetLiveDurationsOfPatient(self, patient_record):
-        maxLastEditDate = self.GetMaxLastEditDate()
+    def getPatientStatus(self, record, withMinusOneIfCensored=False):
         try:
-            diagnosisDate = patient_record['diagnosis_date']
-            lastEditDate = patient_record['last_edit_date']
-            isDead = patient_record['death'] == ["1"]
-            if isDead or diagnosisDate is None or diagnosisDate == '':
-                return None
-            if lastEditDate is None or lastEditDate == '':
-                lastEditDate = maxLastEditDate
-            lastEditDate = datetime.strptime(lastEditDate, '%d.%m.%Y')
-
-            difference = lastEditDate - diagnosisDate
-            if difference.days < 5000:
-                return difference.days
+            if record['death'] is None:
+                if withMinusOneIfCensored:
+                    return -1
+                return 0
+            if record['death'] == ["0"]:
+                return 0
+            return 1
         except:
-            return None
+            if withMinusOneIfCensored:
+                return -1
+            return 0
 
-    def GetLiveDurationsOfCensored(self, records):  # diagnosis date - last edit date/max(last edit date)
+
+    def getStatusAndLiveDurationsOfPatients(self, records):
+        res=[]
+        for r in records:
+            res.append(self.getLiveDurationOfPatient(r))
+        return res
+
+    def getLiveDurationOfPatient(self, record):
+        status = self.getPatientStatus(record)
+        maxLastEditDate = self.getMaxLastEditDate()
+
+        if status == 1:
+            try:
+                deathDate = record['death_date']
+                diagnosisDate = record['diagnosis_date']
+                if deathDate is None or deathDate == '' or diagnosisDate is None or diagnosisDate == '':
+                    raise ValueError
+                difference = deathDate - diagnosisDate
+                duration = difference.days
+                return {"status": status, "duration": duration}
+            except:
+                return {"status": status, "duration": None}
+
+        if status == -1 or status == 0:
+            try:
+                diagnosisDate = record['diagnosis_date']
+                lastEditDate = record['last_edit_date']
+                if diagnosisDate is None or diagnosisDate == '':
+                    raise ValueError
+                if lastEditDate is None or lastEditDate == '':
+                    lastEditDate = datetime.strptime(maxLastEditDate, '%d.%m.%Y')
+                if type(lastEditDate) is str:
+                    lastEditDate = datetime.strptime(lastEditDate, '%d.%m.%Y')
+
+                duration = (lastEditDate - diagnosisDate).days
+                if duration > 5000:
+                    raise ValueError
+
+                return {"status": status, "duration": duration}
+            except:
+                return {"status": status, "duration": None}
+
+
+
+    def getLiveDurationsOfCensored(self, records):  # diagnosis date - last edit date/max(last edit date)
         durations = []
-        maxLastEditDate = self.GetMaxLastEditDate()
+        maxLastEditDate = self.getMaxLastEditDate()
         for r in records:
             try:
                 diagnosisDate = r['diagnosis_date']
@@ -79,57 +119,6 @@ class UmdbHelper:
                 continue
 
         return sorted(durations)
-
-    def getKaplanValuesByDiagnosysName(self, diagnosys_name):
-        records = self.getPatientsByDiagnosysName(diagnosys_name)
-        live_durations_dead = self.GetLiveDurationsOfDead(records)
-        live_durations_censored = self.GetLiveDurationsOfCensored(records)
-
-        mydf = pd.DataFrame()
-        mydf['Durs'] = live_durations_dead + live_durations_censored
-        mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
-
-        kmf = KaplanMeierFitter(label="waltons_data")
-        kmf.fit(mydf['Durs'], mydf['events'])
-        surv = kmf.survival_function_.values
-        timeline = kmf.timeline
-        lower = kmf.confidence_interval_['waltons_data_lower_0.95']
-        upper = kmf.confidence_interval_['waltons_data_upper_0.95']
-        return [surv, timeline, lower, upper]
-
-    def getKaplanValuesByDiagnosysPath(self, path):
-        records = self.repo.getPatientsByDiagnosysPath(path)
-        live_durations_dead = self.GetLiveDurationsOfDead(records)
-        live_durations_censored = self.GetLiveDurationsOfCensored(records)
-
-        mydf = pd.DataFrame()
-        mydf['Durs'] = live_durations_dead + live_durations_censored
-        mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
-
-        kmf = KaplanMeierFitter(label="waltons_data")
-        kmf.fit(mydf['Durs'], mydf['events'])
-        surv = kmf.survival_function_.values
-        timeline = kmf.timeline
-        lower = kmf.confidence_interval_['waltons_data_lower_0.95']
-        upper = kmf.confidence_interval_['waltons_data_upper_0.95']
-        return [surv, timeline, lower, upper]
-
-    def getKaplanValuesByDiagnosys(self, diagnosys):
-        records = self.repo.getPatientsByDiagnosysName(diagnosys)
-        live_durations_dead = self.GetLiveDurationsOfDead(records)
-        live_durations_censored = self.GetLiveDurationsOfCensored(records)
-
-        mydf = pd.DataFrame()
-        mydf['Durs'] = live_durations_dead + live_durations_censored
-        mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
-
-        kmf = KaplanMeierFitter(label="waltons_data")
-        kmf.fit(mydf['Durs'], mydf['events'])
-        surv = kmf.survival_function_.values
-        timeline = kmf.timeline
-        lower = kmf.confidence_interval_['waltons_data_lower_0.95']
-        upper = kmf.confidence_interval_['waltons_data_upper_0.95']
-        return [surv, timeline, lower, upper, kmf.event_table]
 
     def getPatientsBySex(self, records, sex='m'):
         sex_arr = None
@@ -154,8 +143,8 @@ class UmdbHelper:
             return None
 
     def getKaplanValues(self, records):
-        live_durations_dead = self.GetLiveDurationsOfDead(records)
-        live_durations_censored = self.GetLiveDurationsOfCensored(records)
+        live_durations_dead = self.getLiveDurationsOfDead(records)
+        live_durations_censored = self.getLiveDurationsOfCensored(records)
         mydf = pd.DataFrame()
         mydf['Durs'] = live_durations_dead + live_durations_censored
         mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)

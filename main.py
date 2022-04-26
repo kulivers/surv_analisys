@@ -72,12 +72,10 @@ if __name__ == '__main__':
     log = logrank_test(malesValues[0], femalesValues[0], event_observed_A=malesValues[1], event_observed_B=femalesValues[1])
     # Менее (5% = 0,05) значение P означает, что существует значительная разница между группами, которые мы сравнивали
 
-    records = umdbRepo.getAllPatients()
-    withDiagnosysNSex = umdbHelper.formatDf(records=records, boolFieldNames=['diagnosis', 'patient_sex'],
-                                            valuesToBeEqual=[['1', '0', '1', '0'], ['m']],
-                                            fieldsToReturn=['patient_sex', 'diagnosis', 'diagnosis_date'])
+    # withDiagnosysNSex = umdbHelper.formatDf(records=records, boolFieldNames=['diagnosis', 'patient_sex'],
+    #                                         valuesToBeEqual=[['1', '0', '1', '0'], ['m']],
+    #                                         fieldsToReturn=['patient_sex', 'diagnosis', 'diagnosis_date'])
 
-    ter = 1
     # plt.plot(malesValues[1], malesValues[0], drawstyle="steps-pre", color='b')
     # plt.plot(femalesValues[1], femalesValues[0], drawstyle="steps-pre", color='r')
     # plt.ylabel('Вероятность')
@@ -85,3 +83,4 @@ if __name__ == '__main__':
     # plt.xlabel('Дни')
     # plt.title('SURV')
     # plt.show()
+
