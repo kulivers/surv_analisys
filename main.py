@@ -41,7 +41,7 @@ def convert_rgb_to_names(rgb_tuple):
     return f'{names[index]}'
 
 
-def pltDiagnosesByNames(names):
+def pltKMDiagnosesByNames(names):
     survs = []
     for idx, d in enumerate(names):
         path = d['_id']
@@ -73,12 +73,6 @@ if __name__ == '__main__':
     # Менее (5% = 0,05) значение P означает, что существует значительная разница между группами, которые мы сравнивали
 
     records = umdbRepo.getAllPatients()
-    # withSex = umdbHelper.formatDf(records=records, boolFieldNames=['patient_sex'], valuesToBeEqual=[['m']],
-    #                               fieldsToReturn=['patient_sex', 'diagnosis', 'diagnosis_date'])
-    #
-    # withDiagnosys = umdbHelper.formatDf(records=records, boolFieldNames=['diagnosis'], valuesToBeEqual=[['1', '0', '1', '0']],
-    #                                     fieldsToReturn=['patient_sex', 'diagnosis', 'diagnosis_date'])
-
     withDiagnosysNSex = umdbHelper.formatDf(records=records, boolFieldNames=['diagnosis', 'patient_sex'],
                                             valuesToBeEqual=[['1', '0', '1', '0'], ['m']],
                                             fieldsToReturn=['patient_sex', 'diagnosis', 'diagnosis_date'])
