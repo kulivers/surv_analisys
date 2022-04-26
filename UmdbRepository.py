@@ -77,6 +77,18 @@ class UmdbRepository:
         return list(col.find({'diagnosis': diagnosysPath}))
 
     def getPatientsByDiagnosysPath(self, path):
+        """
+
+        :rtype: list
+        """
         col = self.getCollection('records', 'umdb')
         return list(col.find({'diagnosis': path}))
+
+    def getAllPatients(self):
+        """
+
+        :rtype: list
+        """
+        col = self.getCollection('records', 'umdb')
+        return list(col.find())
 
