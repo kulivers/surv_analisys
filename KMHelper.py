@@ -2,14 +2,14 @@ import pandas as pd
 from lifelines import KaplanMeierFitter
 
 from UmdbHelper import UmdbHelper
+from UmdbRepository import UmdbRepository
 
 umdbHelper = UmdbHelper()
 
-def getKaplanValuesByDiagnosysName(diagnosys_name):  # todo move it
-    records = umdbHelper.getPatientsByDiagnosysName(diagnosys_name)
+
+def getKaplanValues(records):
     live_durations_dead = umdbHelper.getLiveDurationsOfDead(records)
     live_durations_censored = umdbHelper.getLiveDurationsOfCensored(records)
-
     mydf = pd.DataFrame()
     mydf['Durs'] = live_durations_dead + live_durations_censored
     mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
@@ -21,6 +21,11 @@ def getKaplanValuesByDiagnosysName(diagnosys_name):  # todo move it
     lower = kmf.confidence_interval_['waltons_data_lower_0.95']
     upper = kmf.confidence_interval_['waltons_data_upper_0.95']
     return [surv, timeline, lower, upper]
+
+
+def getKaplanValuesByDiagnosysName(diagnosys_name):  # todo move it
+    records = umdbHelper.repo.getPatientsByDiagnosysName(diagnosys_name)
+    return getKaplanValues(records)
 
 
 def getKaplanValuesByDiagnosysPath(path):  # todo move it

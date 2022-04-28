@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 from lifelines import KaplanMeierFitter, CoxPHFitter
 from past.types import basestring
@@ -54,9 +55,8 @@ class UmdbHelper:
                 return -1
             return 0
 
-
     def getStatusAndLiveDurationsOfPatients(self, records):
-        res=[]
+        res = []
         for r in records:
             res.append(self.getLiveDurationOfPatient(r))
         return res
@@ -95,8 +95,6 @@ class UmdbHelper:
                 return {"status": status, "duration": duration}
             except:
                 return {"status": status, "duration": None}
-
-
 
     def getLiveDurationsOfCensored(self, records):  # diagnosis date - last edit date/max(last edit date)
         durations = []
@@ -142,57 +140,84 @@ class UmdbHelper:
         except:
             return None
 
-    def getKaplanValues(self, records):
-        live_durations_dead = self.getLiveDurationsOfDead(records)
-        live_durations_censored = self.getLiveDurationsOfCensored(records)
-        mydf = pd.DataFrame()
-        mydf['Durs'] = live_durations_dead + live_durations_censored
-        mydf['events'] = [1] * len(live_durations_dead) + [0] * len(live_durations_censored)
+    def renameDublucateColumns(self, df):
+        cols = list(df.columns)
+        newlist = []
+        for i, v in enumerate(cols):
+            totalcount = cols.count(v)
+            count = cols[:i].count(v)
+            newlist.append(v + str(count + 1) if totalcount > 1 else v)
+        df.columns = newlist
+        return df
 
-        kmf = KaplanMeierFitter(label="waltons_data")
-        kmf.fit(mydf['Durs'], mydf['events'])
-        surv = kmf.survival_function_.values
-        timeline = kmf.timeline
-        lower = kmf.confidence_interval_['waltons_data_lower_0.95']
-        upper = kmf.confidence_interval_['waltons_data_upper_0.95']
-        return [surv, timeline, lower, upper]
+    # df = df.drop(columns=df.columns[0])
 
-    def formatDf(self, records, boolFieldNames, valuesToBeEqual, fieldsToReturn, fixBoolFields=False):
+    def removeArrayColumns(self, df):
+        def delete_multiple_element(list_object, indices):
+            indices = sorted(indices, reverse=True)
+            for idx in indices:
+                if idx < len(list_object):
+                    list_object.pop(idx)
+
+        init_columns = list(df.columns)
+        columns = list(df.columns)
+        if len(columns) != len(set(columns)):
+            df = self.renameDublucateColumns(df)
+            columns = list(df.columns)
+        # get columns with arrays data, save their indexes
+
+        to_delete_cols_idxs = []
+        for idx, col in enumerate(columns):
+            if any(isinstance(x, list) for x in list(df[col])):
+                to_delete_cols_idxs.append(idx)
+
+        # for drop them all
+        to_delete_names = list(map(lambda x: df.columns[x], to_delete_cols_idxs))
+        df = df.drop(columns=to_delete_names)
+
+        # rename columns back
+        delete_multiple_element(init_columns, to_delete_cols_idxs)
+        df.columns = init_columns
+        return df
+
+    def formatDf(self, records, boolFieldNames=[], simpleFieldsToReturn=[], withNones=True, removeArrayColumns=False):
         """
+        :type removeArrayColumns: bool
         :type fixBoolFields: bool
         :type fieldsToReturn: list
         :type boolFieldNames: list
         :type valuesToBeEqual: list
         :type records: list
         """
-        if len(boolFieldNames) != len(valuesToBeEqual):
-            raise ValueError('lengths are not the same')
 
-        fixedBoolFields = []
-        for f in boolFieldNames:
-            if not isinstance(f, str):
-                raise ValueError('val in boolFieldNames is not string')
-            fixedBoolFields.append(str(f) + '_bit')
-        if fixBoolFields:
-            boolFieldNames = fixedBoolFields
+        df = pd.DataFrame(columns=simpleFieldsToReturn + boolFieldNames)
 
-        df = pd.DataFrame(columns=fieldsToReturn + boolFieldNames)
+        saved_values = dict()  # dict({"fieldName": ['savedVal1', 'savedVal2']})  # return: idx: val
 
         for i, r in enumerate(records):
             row = []
-            for f in fieldsToReturn:
+            for f in simpleFieldsToReturn:  # add to row simpleFieldsToReturn values
                 try:
                     row.append(r[f])
                 except:
-                    row.append(False)
-            for idx, f in enumerate(boolFieldNames):
+                    row.append(0)
+            for idx, f in enumerate(boolFieldNames):  # add to row boolFieldNames values
                 try:
-                    if r[f] == valuesToBeEqual[idx]:
-                        row.append(True)
-                    else:
-                        row.append(False)
+                    if f not in saved_values.keys():
+                        saved_values[f] = []
+                    if r[f] not in saved_values[f]:
+                        saved_values[f].append(r[f])
+                    if r[f] in saved_values[f]:
+                        ii = saved_values[f].index(r[f])
+                        row.append(ii)
                 except:
-                    row.append(False)
+                    row.append(None)
             df.loc[i] = row
 
-        return df
+        if removeArrayColumns:
+            df = self.removeArrayColumns(df)
+
+        if not withNones:
+            df.dropna(axis=0, inplace=True)
+
+        return df, saved_values

@@ -67,9 +67,9 @@ if __name__ == '__main__':
     females = umdbHelper.getPatientsBySex(records, 'f')
     noSex = umdbHelper.getPatientsBySex(records, None)
 
-    malesValues = umdbHelper.getKaplanValues(males)
-    femalesValues = umdbHelper.getKaplanValues(females)
-    log = logrank_test(malesValues[0], femalesValues[0], event_observed_A=malesValues[1], event_observed_B=femalesValues[1])
+    # malesValues = umdbHelper.getKaplanValues(males)
+    # femalesValues = umdbHelper.getKaplanValues(females)
+    # log = logrank_test(malesValues[0], femalesValues[0], event_observed_A=malesValues[1], event_observed_B=femalesValues[1])
     # Менее (5% = 0,05) значение P означает, что существует значительная разница между группами, которые мы сравнивали
 
     # withDiagnosysNSex = umdbHelper.formatDf(records=records, boolFieldNames=['diagnosis', 'patient_sex'],
