@@ -11,10 +11,10 @@ from lifelines.datasets import load_rossi
 
 
 def examples():
-    rossi = load_rossi()  # TODO test
+    rossi = load_rossi()
     # cph.fit(rossi, 'week', 'arrest')
 
-    df2 = pd.DataFrame({  # TODO test
+    df2 = pd.DataFrame({
         'T': [5, 3, 9, 8, 7, 4, 4, 3, 2, 5, 6, 7],
         'E': [1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0],
         'var': [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2],
@@ -22,9 +22,9 @@ def examples():
         'month': [10, 3, 9, 8, 7, 4, 4, 3, 2, 5, 6, 7],
         'age': [4, 3, 9, 8, 7, 4, 4, 3, 2, 5, 6, 7],
     })
-    # cph.fit(df, duration_col='T', event_col='E', strata=['month', 'age'], robust=True, weights_col='weights')#TODO test
+    # cph.fit(df, duration_col='T', event_col='E', strata=['month', 'age'], robust=True, weights_col='weights')
 
-    df3 = pd.DataFrame({  # TODO test
+    df3 = pd.DataFrame({
         'T': [5, 3, 9, 8, 7, 4, 4, 3, 2, 5, 6, 7],
         'E': [1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0],
         'var': [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2],
@@ -37,8 +37,10 @@ def examples():
 helper = UmdbHelper()
 repo = UmdbRepository()
 
-common_path = repo.getMostCommonDiagnosesPaths()[7]
+common_path = repo.getMostCommonDiagnosesPaths()[0]
 records = repo.getPatientsByDiagnosysPath(common_path)
+
+conditioning_els, doses = helper.getConditioningElementsForPatients(records)
 
 cph = CoxPHFitter()
 
@@ -49,8 +51,8 @@ for row in status_duration_dict:
     durations.append(row['duration'])
     statuses.append(row['status'])
 
-# todo fix doesnt work
-df, dictionary = helper.formatDf(records, boolFieldNames=['patient_sex', 'death'], simpleFieldsToReturn=['patient_sex', 'death'], removeArrayColumns=True)
+df, dictionary = helper.formatDf(records, boolFieldNames=['patient_sex', 'hsct_donor_type_common'],
+                                 simpleFieldsToReturn=['patient_sex'], removeArrayColumns=True)
 
 df['durs'] = durations
 df['status'] = statuses
@@ -61,4 +63,4 @@ cph.fit(df=df, duration_col='durs', event_col='status')
 
 cph.print_summary()
 
-
+res1 = 1

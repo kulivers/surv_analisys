@@ -221,3 +221,43 @@ class UmdbHelper:
             df.dropna(axis=0, inplace=True)
 
         return df, saved_values
+
+    def getConditioningElements(self, record):
+        elements_object = dict()
+        try:
+            elements_object = record['conditioning_elements']
+        except:
+            return [], dict()
+        active_elements = []
+        doses = dict()
+        keys = list(elements_object.keys())
+        for key in keys:
+            if key == '_id':
+                continue
+            try:
+                if elements_object[key]['is_active']:
+                    active_elements.append(key)
+            except:
+                continue
+            try:
+                if elements_object[key]['is_active']:
+                    dose = elements_object[key]['dose']
+                    doses[key] = dose
+            except:
+                continue
+
+        return active_elements, doses
+
+    def getConditioningElementsForPatients(self, records):
+        """
+        :rtype: list
+        """
+        active_elements = []
+        for record in records:
+            elementsForRecord = self.getConditioningElements(record)
+            active_elements.append(elementsForRecord)
+
+        conditioning_els = list(map(lambda x: x[0], active_elements))
+        conditioning_els_doses = list(map(lambda x: x[1], active_elements))
+
+        return conditioning_els, conditioning_els_doses
