@@ -248,7 +248,26 @@ class UmdbHelper:
 
         return active_elements, doses
 
-    def getConditioningElementsForPatients(self, records):
+    def formConditioningElementsDataFrame(self, conditioning_elements):
+        listOfAllElements = []
+        for sublist in conditioning_elements:
+            for element in sublist:
+                if element not in listOfAllElements:
+                    listOfAllElements.append(element)
+        df = pd.DataFrame(columns=listOfAllElements)
+        for idx, sublist in enumerate(conditioning_elements):
+            columnNames = list(df.columns)
+            row=[]
+            # take every name in columnName, if name in sublist row append 1 else 0
+            for name in columnNames:
+                if name in sublist:
+                    row.append(1)
+                else:
+                    row.append(0)
+            df.loc[idx] = row
+        return df
+
+    def getConditioningElementsForPatients(self, records, returnDf=True):
         """
         :rtype: list
         """
@@ -259,5 +278,8 @@ class UmdbHelper:
 
         conditioning_els = list(map(lambda x: x[0], active_elements))
         conditioning_els_doses = list(map(lambda x: x[1], active_elements))
+
+        if returnDf:
+            return self.formConditioningElementsDataFrame(conditioning_els), conditioning_els_doses
 
         return conditioning_els, conditioning_els_doses

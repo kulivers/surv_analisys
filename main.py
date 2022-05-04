@@ -10,6 +10,7 @@ from webcolors import (
     hex_to_rgb,
 )
 
+from CoxHelper import coxMain
 from HsctHelper import HsctHelper
 from HsctRepository import HsctRepository
 from UmdbHelper import UmdbHelper
@@ -61,26 +62,27 @@ def pltKMDiagnosesByNames(names):
 
 
 if __name__ == '__main__':
-    common_paths = umdbRepo.getMostCommonDiagnosesPaths(False, 6)
-    records = umdbRepo.getPatientsByDiagnosysPath(common_paths[0])
-    males = umdbHelper.getPatientsBySex(records, 'm')
-    females = umdbHelper.getPatientsBySex(records, 'f')
-    noSex = umdbHelper.getPatientsBySex(records, None)
-
-    # malesValues = umdbHelper.getKaplanValues(males)
-    # femalesValues = umdbHelper.getKaplanValues(females)
-    # log = logrank_test(malesValues[0], femalesValues[0], event_observed_A=malesValues[1], event_observed_B=femalesValues[1])
-    # Менее (5% = 0,05) значение P означает, что существует значительная разница между группами, которые мы сравнивали
-
-    # withDiagnosysNSex = umdbHelper.formatDf(records=records, boolFieldNames=['diagnosis', 'patient_sex'],
-    #                                         valuesToBeEqual=[['1', '0', '1', '0'], ['m']],
-    #                                         fieldsToReturn=['patient_sex', 'diagnosis', 'diagnosis_date'])
-
-    # plt.plot(malesValues[1], malesValues[0], drawstyle="steps-pre", color='b')
-    # plt.plot(femalesValues[1], femalesValues[0], drawstyle="steps-pre", color='r')
-    # plt.ylabel('Вероятность')
-    # plt.yticks(np.arange(0, 1.01, 0.1))
-    # plt.xlabel('Дни')
-    # plt.title('SURV')
-    # plt.show()
+    coxMain()
+    # common_paths = umdbRepo.getMostCommonDiagnosesPaths(False, 6)
+    # records = umdbRepo.getPatientsByDiagnosysPath(common_paths[0])
+    # males = umdbHelper.getPatientsBySex(records, 'm')
+    # females = umdbHelper.getPatientsBySex(records, 'f')
+    # noSex = umdbHelper.getPatientsBySex(records, None)
+    #
+    # # malesValues = umdbHelper.getKaplanValues(males)
+    # # femalesValues = umdbHelper.getKaplanValues(females)
+    # # log = logrank_test(malesValues[0], femalesValues[0], event_observed_A=malesValues[1], event_observed_B=femalesValues[1])
+    # # Менее (5% = 0,05) значение P означает, что существует значительная разница между группами, которые мы сравнивали
+    #
+    # # withDiagnosysNSex = umdbHelper.formatDf(records=records, boolFieldNames=['diagnosis', 'patient_sex'],
+    # #                                         valuesToBeEqual=[['1', '0', '1', '0'], ['m']],
+    # #                                         fieldsToReturn=['patient_sex', 'diagnosis', 'diagnosis_date'])
+    #
+    # # plt.plot(malesValues[1], malesValues[0], drawstyle="steps-pre", color='b')
+    # # plt.plot(femalesValues[1], femalesValues[0], drawstyle="steps-pre", color='r')
+    # # plt.ylabel('Вероятность')
+    # # plt.yticks(np.arange(0, 1.01, 0.1))
+    # # plt.xlabel('Дни')
+    # # plt.title('SURV')
+    # # plt.show()
 
