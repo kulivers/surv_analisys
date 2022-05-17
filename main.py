@@ -77,7 +77,7 @@ if __name__ == '__main__':
     # plotMultipleKaplanValues([males, females], ['males','females'])
 
 
-    here_stop=1
+
     # malesValues = umdbHelper.getKaplanValues(males)
     # femalesValues = umdbHelper.getKaplanValues(females)
     # log = logrank_test(malesValues[0], femalesValues[0], event_observed_A=malesValues[1], event_observed_B=femalesValues[1])
