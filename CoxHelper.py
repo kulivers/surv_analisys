@@ -1,8 +1,8 @@
+import matplotlib.pyplot as plt
 import os
 import datetime
 
 import pandas as pd
-# from lifelines import CoxPHFitter
 from lifelines.fitters.coxph_fitter import CoxPHFitter
 
 from UmdbHelper import UmdbHelper
@@ -58,16 +58,9 @@ def examples():
     cph.predict_median(df)
 
 
-def coxMain():
+def formirateDf(records, diagnosysPath, boolFieldNames=['patient_sex', 'hsct_donor_type_common'], simpleFieldsToReturn=['patient_sex'],
+                removeArrayColumns=True):
     helper = UmdbHelper()
-    repo = UmdbRepository()
-
-    common_path = repo.getMostCommonDiagnosesPaths()[0]
-    records = repo.getPatientsByDiagnosysPath(common_path)
-    conditioning_els_df, doses = helper.getConditioningElementsForPatients(records, returnDf=True)
-
-    cph = CoxPHFitter()
-
     status_duration_dict = helper.getStatusAndLiveDurationsOfPatients(records)
     durations = []
     statuses = []
@@ -80,17 +73,37 @@ def coxMain():
 
     df['durs'] = durations
     df['status'] = statuses
-
-    for cond_el in list(conditioning_els_df.columns)[0:2]:
-        df[cond_el] = conditioning_els_df[cond_el]
-
     df.dropna(axis=0, inplace=True)
+    return df, dictionary
 
-    cph.fit(df=df, duration_col='durs', event_col='status')
 
-    cph.print_summary()
+def addConditioningElementsToDf(df, records, conditioning_els_df_names=['bortezomib', 'fludarabine']):
+    helper = UmdbHelper()
+    conditioning_els_df, doses = helper.getConditioningElementsForPatients(records, returnDf=True)
+    for cond_el in conditioning_els_df_names:  # list(conditioning_els_df.columns)[0:2]:
+        df[cond_el] = conditioning_els_df[cond_el]
+    return df
 
-    res1 = 1
+
+def getTestCoxFit(toPrint=False, toPlot=False):
+    repo = UmdbRepository()
+    common_path = repo.getMostCommonDiagnosesPaths(withCounts=False)[0]
+    records = repo.getPatientsByDiagnosysPath(common_path)
+    df, dictionary = formirateDf(records, diagnosysPath=common_path)
+    df = addConditioningElementsToDf(df, records, conditioning_els_df_names=['bortezomib', 'fludarabine'])
+    cph = CoxPHFitter()
+    result = cph.fit(df=df, duration_col='durs', event_col='status').summary
+    if toPrint is True:
+        cph.print_summary()
+    if toPlot is True:
+        # by default, ``plot`` will present the log-hazard ratios (the coefficients).
+        # However, by turning this flag to True, the hazard ratios are presented instead.
+        cph.plot(hazard_ratios=True)
+        plt.show()
+
+    print("CHECK_ASSUMPTIONS \n==========================================================================")
+    cph.check_assumptions(training_df=df, show_plots=True)
+    return result, dictionary
 
 # func i: массив названий параметров для оценки, возращает cph.fit
 # функция рисующая графики по коксу

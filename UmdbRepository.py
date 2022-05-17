@@ -28,7 +28,7 @@ class UmdbRepository:
         return db[collection_name]
 
     def getMostCommonDiagnosesPaths(self, withCounts=False, N=20):  # there is broken paths if big value
-        # like ['1', '3', '6', 'Десмопластическая медуллобластома']
+                                                                    # like ['1', '3', '6', 'Десмопластическая медуллобластома']
 
         collection = self.getCollection('records', 'umdb')
         pipeline = [{"$group": {"_id": '$diagnosis', "count": {"$sum": 1}}}]  # where '_id' is not None
