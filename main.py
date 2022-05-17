@@ -70,14 +70,13 @@ if __name__ == '__main__':
     males = umdbHelper.getPatientsBySex(records, 'm')
     females = umdbHelper.getPatientsBySex(records, 'f')
     noSex = umdbHelper.getPatientsBySex(records, None)
-    getTestCoxFit(toPrint=True) #goHERE
+    getTestCoxFit()  # goHERE
 
     # plotKaplanValues(males, 'males')
     # plotKaplanValues(females, 'females')
     # plotMultipleKaplanValues([males, females], ['males','females'])
 
-
-
+    here_stop = 1
     # malesValues = umdbHelper.getKaplanValues(males)
     # femalesValues = umdbHelper.getKaplanValues(females)
     # log = logrank_test(malesValues[0], femalesValues[0], event_observed_A=malesValues[1], event_observed_B=femalesValues[1])

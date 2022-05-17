@@ -58,7 +58,7 @@ def examples():
     cph.predict_median(df)
 
 
-def coxMain():
+def getTestCoxFit():
     helper = UmdbHelper()
     repo = UmdbRepository()
 
@@ -90,7 +90,6 @@ def coxMain():
 
     cph.print_summary()
 
-    res1 = 1
 
 # func i: массив названий параметров для оценки, возращает cph.fit
 # функция рисующая графики по коксу
