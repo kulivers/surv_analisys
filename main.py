@@ -6,7 +6,7 @@ from webcolors import (
     hex_to_rgb,
 )
 
-from CoxHelper import getTestCoxFit
+from examples import getTestCoxFit
 from hsct.HsctHelper import HsctHelper
 from hsct.HsctRepository import HsctRepository
 from KMHelper import plotKaplanValues, plotMultipleKaplanValues, getKaplanValues, getKaplanValuesByDiagnosysName

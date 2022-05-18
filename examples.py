@@ -1,27 +1,19 @@
 import numpy as np
+import pandas as pd
+from lifelines import CoxPHFitter
 from matplotlib import pyplot as plt
 
-
-from hsct.HsctHelper import HsctHelper
-from hsct.HsctRepository import HsctRepository
-from KMHelper import plotKaplanValues, plotMultipleKaplanValues, getKaplanValues
 from UmdbHelper import UmdbHelper
 from UmdbRepository import UmdbRepository
+from hsct.HsctHelper import HsctHelper
+from hsct.HsctRepository import HsctRepository
 
 umdbRepo = UmdbRepository()
 umdbHelper = UmdbHelper()
 hsctRepo = HsctRepository()
 hsctHelper = HsctHelper()
 
-import pandas as pd
-# from lifelines import CoxPHFitter
-from lifelines.fitters.coxph_fitter import CoxPHFitter
-
-from UmdbHelper import UmdbHelper
-from UmdbRepository import UmdbRepository
-
-
-def examples():
+def base_example_cox_fit():
     cph = CoxPHFitter()
     # rossi = load_rossi()
     # cph.fit(df=rossi, duration_col='week', event_col='arrest')
@@ -120,7 +112,3 @@ def getTestCoxFit():
     cph.fit(df=df, duration_col='durs', event_col='status')
     cph.print_summary()
 
-# func i: массив названий параметров для оценки, возращает cph.fit
-# функция рисующая графики по коксу
-# check what is z-value
-# make as OOP

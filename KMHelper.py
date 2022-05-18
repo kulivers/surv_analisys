@@ -3,7 +3,6 @@ import pandas as pd
 from lifelines import KaplanMeierFitter
 
 from UmdbHelper import UmdbHelper
-from UmdbRepository import UmdbRepository
 
 umdbHelper = UmdbHelper()
 
