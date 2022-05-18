@@ -1,8 +1,4 @@
-from lifelines.statistics import logrank_test
 import numpy as np
-import pandas as pd
-from lifelines import KaplanMeierFitter
-from lifelines import CoxPHFitter
 from matplotlib import pyplot as plt
 from scipy.spatial import KDTree
 from webcolors import (
@@ -13,7 +9,7 @@ from webcolors import (
 from CoxHelper import getTestCoxFit
 from HsctHelper import HsctHelper
 from HsctRepository import HsctRepository
-from KMHelper import plotKaplanValues, plotMultipleKaplanValues
+from KMHelper import plotKaplanValues, plotMultipleKaplanValues, getKaplanValues
 from UmdbHelper import UmdbHelper
 from UmdbRepository import UmdbRepository
 
@@ -62,9 +58,9 @@ def pltKMDiagnosesByNames(names):
     return survs
 
 
-if __name__ == '__main__':
-    # getTestCoxFit(toPrint=True)
 
+
+if __name__ == '__main__':
     common_paths = umdbRepo.getMostCommonDiagnosesPaths(False, 6)
     records = umdbRepo.getPatientsByDiagnosysPath(common_paths[0])
     males = umdbHelper.getPatientsBySex(records, 'm')
@@ -72,13 +68,12 @@ if __name__ == '__main__':
     noSex = umdbHelper.getPatientsBySex(records, None)
     getTestCoxFit()  # goHERE
 
-    # plotKaplanValues(males, 'males')
-    # plotKaplanValues(females, 'females')
-    # plotMultipleKaplanValues([males, females], ['males','females'])
+    plotKaplanValues(males, 'males')
+    plotKaplanValues(females, 'females')
+    plotMultipleKaplanValues([males, females], ['males','females'])
 
-    here_stop = 1
-    # malesValues = umdbHelper.getKaplanValues(males)
-    # femalesValues = umdbHelper.getKaplanValues(females)
+    malesValues = getKaplanValues(males)
+    femalesValues = getKaplanValues(females)
     # log = logrank_test(malesValues[0], femalesValues[0], event_observed_A=malesValues[1], event_observed_B=femalesValues[1])
     # # Менее (5% = 0,05) значение P означает, что существует значительная разница между группами, которые мы сравнивали
     #
@@ -86,10 +81,10 @@ if __name__ == '__main__':
     #                                         valuesToBeEqual=[['1', '0', '1', '0'], ['m']],
     #                                         fieldsToReturn=['patient_sex', 'diagnosis', 'diagnosis_date'])
     #
-    # plt.plot(malesValues[1], malesValues[0], drawstyle="steps-pre", color='b')
-    # plt.plot(femalesValues[1], femalesValues[0], drawstyle="steps-pre", color='r')
-    # plt.ylabel('Вероятность')
-    # plt.yticks(np.arange(0, 1.01, 0.1))
-    # plt.xlabel('Дни')
-    # plt.title('SURV')
-    # plt.show()
+    plt.plot(malesValues[1], malesValues[0], drawstyle="steps-pre", color='b')
+    plt.plot(femalesValues[1], femalesValues[0], drawstyle="steps-pre", color='r')
+    plt.ylabel('Вероятность')
+    plt.yticks(np.arange(0, 1.01, 0.1))
+    plt.xlabel('Дни')
+    plt.title('SURV')
+    plt.show()
