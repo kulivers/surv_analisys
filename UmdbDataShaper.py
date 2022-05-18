@@ -3,7 +3,7 @@ import pandas as pd
 from UmdbRepository import UmdbRepository
 
 
-class UmdbHelper:
+class UmdbDataShaper:
     repo = UmdbRepository()
 
     def getLiveDurationsOfDead(self, records, daysSinceDiagnosis=12132131):

@@ -1,5 +1,4 @@
 from pymongo import MongoClient
-import pymongo
 
 
 class UmdbRepository:
@@ -105,3 +104,6 @@ class UmdbRepository:
         }, {"$sort": {"last_edit_date": -1}}])
         result = list(queryRes)
         return result[0]['last_edit_date']
+
+
+

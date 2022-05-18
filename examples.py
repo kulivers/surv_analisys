@@ -3,22 +3,20 @@ import pandas as pd
 from lifelines import CoxPHFitter
 from matplotlib import pyplot as plt
 
-from UmdbHelper import UmdbHelper
+from KMHelper import plotKaplanValues, plotMultipleKaplanValues, getKaplanValues
+from UmdbDataShaper import UmdbDataShaper
 from UmdbRepository import UmdbRepository
-from hsct.HsctHelper import HsctHelper
-from hsct.HsctRepository import HsctRepository
 
 umdbRepo = UmdbRepository()
-umdbHelper = UmdbHelper()
-hsctRepo = HsctRepository()
-hsctHelper = HsctHelper()
+umdbHelper = UmdbDataShaper()
+
 
 def base_example_cox_fit():
     cph = CoxPHFitter()
     # rossi = load_rossi()
     # cph.fit(df=rossi, duration_col='week', event_col='arrest')
     # cph.print_summary()
-    helper = UmdbHelper()
+    helper = UmdbDataShaper()
     repo = UmdbRepository()
 
     common_path = repo.getMostCommonDiagnosesPaths()[0]
@@ -60,9 +58,9 @@ def base_example_cox_fit():
     cph.predict_median(df)
 
 
-def getTestKaplanPlots():
+def getTestKaplanPlotsNLogRank():
     common_paths = umdbRepo.getMostCommonDiagnosesPaths(False, 6)
-    records = umdbRepo.getPatientsByDiagnosysPath(common_paths[0])
+    records = umdbRepo.getPatientsByDiagnosysPath(common_paths[4])
     males = umdbHelper.getPatientsBySex(records, 'm')
     females = umdbHelper.getPatientsBySex(records, 'f')
 
@@ -89,7 +87,7 @@ def getTestKaplanPlots():
 
 
 def getTestCoxFit():
-    helper = UmdbHelper()
+    helper = UmdbDataShaper()
     repo = UmdbRepository()
 
     common_path = repo.getMostCommonDiagnosesPaths()[0]
@@ -111,4 +109,3 @@ def getTestCoxFit():
     df.dropna(axis=0, inplace=True)
     cph.fit(df=df, duration_col='durs', event_col='status')
     cph.print_summary()
-
