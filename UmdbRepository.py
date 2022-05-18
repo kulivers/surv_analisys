@@ -28,7 +28,7 @@ class UmdbRepository:
         return db[collection_name]
 
     def getMostCommonDiagnosesPaths(self, withCounts=False, N=20):  # there is broken paths if big value
-                                                                    # like ['1', '3', '6', 'Десмопластическая медуллобластома']
+        # like ['1', '3', '6', 'Десмопластическая медуллобластома']
 
         collection = self.getCollection('records', 'umdb')
         pipeline = [{"$group": {"_id": '$diagnosis', "count": {"$sum": 1}}}]  # where '_id' is not None
@@ -92,3 +92,16 @@ class UmdbRepository:
         col = self.getCollection('records', 'umdb')
         return list(col.find())
 
+    def getMaxLastEditDate(self):
+        collection = self.getCollection('records', 'umdb')
+        queryRes = collection.aggregate([{
+            "$project": {
+                "last_edit_date": {
+                    "$dateFromString": {
+                        "dateString": '$last_edit_date'
+                    }
+                }
+            }
+        }, {"$sort": {"last_edit_date": -1}}])
+        result = list(queryRes)
+        return result[0]['last_edit_date']

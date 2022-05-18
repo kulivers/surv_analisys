@@ -2,8 +2,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-from HsctHelper import HsctHelper
-from HsctRepository import HsctRepository
+from hsct.HsctHelper import HsctHelper
+from hsct.HsctRepository import HsctRepository
 from KMHelper import plotKaplanValues, plotMultipleKaplanValues, getKaplanValues
 from UmdbHelper import UmdbHelper
 from UmdbRepository import UmdbRepository

@@ -1,10 +1,5 @@
 from datetime import datetime
-
-import numpy as np
 import pandas as pd
-from lifelines import KaplanMeierFitter, CoxPHFitter
-from past.types import basestring
-
 from UmdbRepository import UmdbRepository
 
 
@@ -26,20 +21,6 @@ class UmdbHelper:
                 a = 1
 
         return sorted(durations)
-
-    def getMaxLastEditDate(self):
-        col = self.repo.getCollection()
-        queryRes = col.aggregate([{
-            "$project": {
-                "last_edit_date": {
-                    "$dateFromString": {
-                        "dateString": '$last_edit_date'
-                    }
-                }
-            }
-        }, {"$sort": {"last_edit_date": -1}}])
-        result = list(queryRes)
-        return result[0]['last_edit_date']
 
     def getPatientStatus(self, record, withMinusOneIfCensored=False):
         try:
@@ -63,7 +44,8 @@ class UmdbHelper:
 
     def getLiveDurationOfPatient(self, record):
         status = self.getPatientStatus(record)
-        maxLastEditDate = self.getMaxLastEditDate()
+        repo = UmdbRepository()
+        maxLastEditDate = repo.getMaxLastEditDate()
 
         if status == 1:
             try:
@@ -98,7 +80,8 @@ class UmdbHelper:
 
     def getLiveDurationsOfCensored(self, records):  # diagnosis date - last edit date/max(last edit date)
         durations = []
-        maxLastEditDate = self.getMaxLastEditDate()
+        repo = UmdbRepository()
+        maxLastEditDate = repo.getMaxLastEditDate()
         for r in records:
             try:
                 diagnosisDate = r['diagnosis_date']
@@ -257,7 +240,7 @@ class UmdbHelper:
         df = pd.DataFrame(columns=listOfAllElements)
         for idx, sublist in enumerate(conditioning_elements):
             columnNames = list(df.columns)
-            row=[]
+            row = []
             # take every name in columnName, if name in sublist row append 1 else 0
             for name in columnNames:
                 if name in sublist:

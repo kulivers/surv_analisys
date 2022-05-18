@@ -1,6 +1,4 @@
-from datetime import datetime, timedelta
-
-from HsctRepository import HsctRepository
+from datetime import datetime
 
 
 class HsctHelper:

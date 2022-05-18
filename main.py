@@ -7,9 +7,9 @@ from webcolors import (
 )
 
 from CoxHelper import getTestCoxFit
-from HsctHelper import HsctHelper
-from HsctRepository import HsctRepository
-from KMHelper import plotKaplanValues, plotMultipleKaplanValues, getKaplanValues
+from hsct.HsctHelper import HsctHelper
+from hsct.HsctRepository import HsctRepository
+from KMHelper import plotKaplanValues, plotMultipleKaplanValues, getKaplanValues, getKaplanValuesByDiagnosysName
 from UmdbHelper import UmdbHelper
 from UmdbRepository import UmdbRepository
 
@@ -44,8 +44,8 @@ def pltKMDiagnosesByNames(names):
     for idx, d in enumerate(names):
         path = d['_id']
         name = umdbRepo.getDiagnosysName(path)
-        [surv, timeline, lower, upper] = umdbHelper.getKaplanValuesByDiagnosysName(name)
-        survs.append(umdbHelper.getKaplanValuesByDiagnosysName(name))
+        [surv, timeline, lower, upper] = getKaplanValuesByDiagnosysName(name)
+        survs.append(getKaplanValuesByDiagnosysName(name))
         p, = plt.plot(timeline, surv, drawstyle="steps-pre")
         rgb = hex_to_rgb(p.get_color())
         color = convert_rgb_to_names(rgb)
@@ -58,8 +58,6 @@ def pltKMDiagnosesByNames(names):
     return survs
 
 
-
-
 if __name__ == '__main__':
     common_paths = umdbRepo.getMostCommonDiagnosesPaths(False, 6)
     records = umdbRepo.getPatientsByDiagnosysPath(common_paths[0])
@@ -70,7 +68,7 @@ if __name__ == '__main__':
 
     plotKaplanValues(males, 'males')
     plotKaplanValues(females, 'females')
-    plotMultipleKaplanValues([males, females], ['males','females'])
+    plotMultipleKaplanValues([males, females], ['males', 'females'])
 
     malesValues = getKaplanValues(males)
     femalesValues = getKaplanValues(females)
